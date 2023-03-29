@@ -284,7 +284,7 @@ pipeline{
 
 ### 28. Create prod folder
 
-### 28. Create fastapi.service file under the prod directory
+### 29. Create fastapi.service file under the prod directory
 
 - check test: localhost:8001/docs
 - check prod: localhost:8000/docs
