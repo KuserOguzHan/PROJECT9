@@ -213,7 +213,7 @@ uvicorn main:app --host 0.0.0.0 --port 8002 --reload
 ```
 
 ### 9. Create test_main.py file
-- Test file is related to Jenkins. It check fastapi whether code is true when you send code gitea.
+- It is related to main page of the test server interface
 
 ```
 from fastapi.testclient import TestClient
