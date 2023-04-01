@@ -260,6 +260,14 @@ if __name__ == '__main__':
 
 ### 16. Create Jenkinsfile
 - I want to learn whether Jenkis is runing.
+```
+.
+
+├── playbooks
+├── Jenkinsfile
+├── README.md
+├── hosts
+```
 
 ``` 
 pipeline{
@@ -277,9 +285,24 @@ pipeline{
 
 ### 17. Create playbooks folder and move src file to inside it
 
+
+
+
+
 ### 18. Create install-fast-on-test.yaml file
 
-- Test.yaml file is 
+``` 
+.
+└── playbooks
+    ├── prod
+    ├── src/fastapi_hepsiburada_prediction
+    ├── test
+    ├── install-fast-on-prod.yaml
+    ├── install-fast-on-test.yaml
+    ├── testing-fastapi.yaml
+
+``` 
+- install-fast-on-test.yaml file is to create a test server.
 
 ``` 
 - hosts: test
@@ -298,6 +321,12 @@ pipeline{
 
 ### 19. Change Jenkinsfile
 
+```
+├── playbooks
+├── Jenkinsfile
+├── README.md
+├── hosts
+```
 
 ``` 
 pipeline{
@@ -315,9 +344,29 @@ pipeline{
 ``` 
 
 ### 20. Create hosts file
+- test ve prod serverlerın ip adresleri ve connection türü, user türü gibi bilgiler
+```
+├── playbooks
+├── Jenkinsfile
+├── README.md
+├── hosts
+```
+
+```
+[all:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+ansible_connection = ssh
+ansible_python_interpreter = /usr/bin/python3
+
+[172.18.0.8]
+test ansible_host=test ansible_user=test_user
+
+[172.18.0.7]
+prod ansible_host=prod ansible_user=prod_user
+```
 
 ### 21. Check if the files copied to the test_server
-
+- Oluşturduğumuz Jenkinsfile dosyasının içeriğinde olan bilgilerin kopyalanıp kopyalanmadığını kontrol ediyoruz.
 ``` 
 (fastapi) [train@localhost fastapi_hepsiburada_prediction]$ docker exec -it test_server bash
 ``` 
@@ -327,6 +376,7 @@ pipeline{
 ```
 
 ### 22. Update install-fast-on-test.yaml file
+- Servicefileın kopyalanması,pip kurulumu, requirements indirilmesi eklendi
 
 ``` 
 - hosts: test
