@@ -15,16 +15,15 @@
 
 ### 4. Create src/fastapi_hepsiburada_prediction
 ```
-.
-└── src
-    └── fastapi_hepsiburada_prediction
-        └── database.py
-        └── main.py
-        └── models.py
-        └── requirements.txt
-        └── train.py
-        └── test_main.py
-        └── run_train.py
+src
+└── fastapi_hepsiburada_prediction
+    └── database.py
+    └── main.py
+    └── models.py
+    └── requirements.txt
+    └── train.py
+    └── test_main.py
+    └── run_train.py
 ```
 
 
