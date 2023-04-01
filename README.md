@@ -14,6 +14,20 @@
 ### 3. Open the VisualStudio Code and Create project files
 
 ### 4. Create src/fastapi_hepsiburada_prediction
+```
+.
+└── src
+    └── fastapi_hepsiburada_prediction
+        └── database.py
+        └── main.py
+        └── models.py
+        └── requirements.txt
+        └── train.py
+        └── test_main.py
+        └── run_train.py
+```
+
+
 
 ### 5. Create requirements.txt file
 ```
@@ -111,6 +125,7 @@ def read_and_train():
 
    
 ### 7. Create models.py
+
 - Models.py is table of fastapi databases
 
 ```
@@ -213,6 +228,7 @@ uvicorn main:app --host 0.0.0.0 --port 8002 --reload
 ```
 
 ### 9. Create test_main.py file
+
 - It is related to main page of the test server interface
 
 ```
@@ -262,10 +278,14 @@ if __name__ == '__main__':
 
 ``` 
 └── playbooks
-    ├── prod
-    ├── src/fastapi_hepsiburada_prediction
-    ├── test
-
+    └── src/fastapi_hepsiburada_prediction
+        └── database.py
+        └── main.py
+        └── models.py
+        └── requirements.txt
+        └── train.py
+        └── test_main.py
+        └── run_train.py
 ``` 
 
 
@@ -274,10 +294,9 @@ if __name__ == '__main__':
 - I want to learn whether Jenkis is runing.
 
 ```
-├── playbooks
+└── playbooks
+    └── src/fastapi_hepsiburada_prediction
 ├── Jenkinsfile
-├── README.md
-├── hosts
 ```
 
 ``` 
@@ -299,9 +318,7 @@ pipeline{
 
 ``` 
 └── playbooks
-    ├── prod
     ├── src/fastapi_hepsiburada_prediction
-    ├── test
     ├── install-fast-on-test.yaml
 
 ``` 
@@ -327,8 +344,6 @@ pipeline{
 ```
 ├── playbooks
 ├── Jenkinsfile
-├── README.md
-├── hosts
 ```
 
 ``` 
@@ -353,7 +368,6 @@ pipeline{
 ```
 ├── playbooks
 ├── Jenkinsfile
-├── README.md
 ├── hosts
 ```
 
@@ -466,16 +480,20 @@ prod ansible_host=prod ansible_user=prod_user
         state: started
         enabled: yes
 ``` 
-#check
+
+#### check
 ```
 [root@test_server /]# systemctl status fastapi
 ```
-#check test server 
 
+#### check test server 
 ```
 localhost:8001/docs
 ```
+
+
 ### 19. Update Jenkinsfile
+
 ``` 
 pipeline{
    agent any
@@ -503,6 +521,7 @@ pipeline{
 ``` 
 └── playbooks
     ├── src/fastapi_hepsiburada_prediction
+    ├── install-fast-on-test.yaml
     ├── testing-fastapi.yaml
 
 ``` 
@@ -547,8 +566,9 @@ pipeline{
 ``` 
 └── playbooks
     ├── src/fastapi_hepsiburada_prediction
-    ├── testing-fastapi.yaml
+    ├── install-fast-on-test.yaml
     ├── install-fast-on-prod.yaml
+    ├── testing-fastapi.yaml
 
 ``` 
 
@@ -608,13 +628,12 @@ pipeline{
 
 ``` 
 └── playbooks
-    ├── prod
-        └── fastapi.service
-    ├    
     ├── src/fastapi_hepsiburada_prediction
-    ├── test
     ├── install-fast-on-test.yaml
-    
+    ├── install-fast-on-prod.yaml
+    ├── testing-fastapi.yaml
+    ├── prod
+        └── fastapi.service 
 ```
 ### 23.2. Create fastapi.service file under the prod directory
 
