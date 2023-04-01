@@ -1,13 +1,44 @@
+### 0. Information of Project
+
+- The project aims to teach us how to use Jenkins and fastapi with the ML model.
+- We will learn the CI-CD cycle in an ML PROJECT.
+- First, we write code and send it to gitea, this process is CI.
+- If the code is true, Jenkins will check the written code,  Jenkins will run new code.
+- Thus, fastapi is to be run continuously.
+
+
 ### 1. Create Gitea Organization
+
 ### 2. Create Gitea Repository under Organization
+
 ### 3. Open the VisualStudio Code and Create project files
+
 ### 4. Create src/fastapi_hepsiburada_prediction
-### 5. Create train.py file
-### 6. Create requirements.txt file
-### 7. pip install -r requirements.txt
-### 8. mkdir saved_models
-### 9. run train.py : python train.py
-``` 
+
+### 5. Create requirements.txt file
+```
+pandas<=1.4.1
+scikit-learn<=1.0.2
+joblib<=1.2.0
+fastapi[all]==0.83.0
+uvicorn[standard]==0.13.4
+sqlmodel==0.0.8
+pymysql==1.0.2
+#python-dotenv==0.21.0
+gunicorn==20.1.0
+pytest==7.0.1
+```
+
+```
+pip install -r requirements.txt
+```
+
+### 6. Create train.py file
+- Thise file is ML a model.
+- Creta a new file named "saved_models".
+- Run this comond "python train.py"
+
+```
 import time
 import random
 import numpy as np
@@ -76,30 +107,160 @@ def read_and_train():
     prediction = estimator_loaded.predict(X_manual_test)
     print("prediction", prediction)
 
+```
 
-read_and_train()
+   
+### 7. Create models.py
+- Models.py is table of fastapi databases
 
-```    
-### 10. Create models.py, run_train.py, main.py, Dockerfile
+```
+from pydantic import BaseModel
 
-### 11. Check fastapi with uvicorn
-``` 
-  uvicorn main:app --host 0.0.0.0 --port 8002 --reload
-``` 
+class hepsiburada(BaseModel):
+    memory: float
+    ram: float
+    screen_size: float
+    power:float
+    front_camera:float
+    rc1:float
+    rc3:float
+    rc5:float
+    rc7:float
 
-### 12. Create test_main.py file
+    class Config:
+        schema_extra = {
+            "example": {
+                "memory": 128.0,
+                "ram": 8.0,
+                "screen_size": 6.40,
+                "power": 4310.0,
+                "front_camera": 32.0,
+                "rc1": 48.0,
+                "rc3": 8.0 ,
+                "rc5": 2.0,
+                "rc7": 2.0,
 
-### 13. run uvicorn on src/fastapi_hepsiburada_prediction ..
+            }
+        }
 
-### 14. run test_main.py
+```
 
- ``` 
- pytest
- ``` 
+### 8. Creta Main.py
 
-### 15. create new Jenkins item.
+- Main.py is the main file-code of fastapi.
+
+```
+import os
+import pathlib
+import joblib, uvicorn, argparse
+from fastapi import FastAPI, Request
+
+try:
+    from models import hepsiburada
+except:
+    from fastapi_hepsiburada_prediction.models import hepsiburada
+
+
+# Read models saved during train phase
+current_dir = pathlib.Path(__file__).parent.resolve()
+dirname = os.path.join(current_dir, 'saved_models')
+estimator_hepsiburada_loaded = joblib.load(os.path.join(dirname, "randomforest_with_hepsiburada.pkl"))
+
+
+
+app = FastAPI()
+
+def make_hepsiburada_prediction(model, request):
+    # parse input from request
+    memory= request["memory"]
+    ram= request["ram"]
+    screen_size= request["screen_size"]
+    power= request["power"]
+    front_camera= request["front_camera"]
+    rc1= request["rc1"]
+    rc3= request["rc3"]
+    rc5= request["rc5"]
+    rc7= request["rc7"]
+
+
+    # Make an input vector
+    hepsiburada = [[memory, ram, screen_size, power, front_camera, rc1, rc3, rc5, rc7]]
+
+    # Predict
+    prediction = model.predict(hepsiburada)
+
+    return prediction[0]
+
+# Hepsiburada Prediction endpoint
+@app.post("/prediction/hepsiburada")
+def predict_hepsiburada(request: hepsiburada):
+    prediction = make_hepsiburada_prediction(estimator_hepsiburada_loaded, request.dict())
+    return {"result":prediction}
+
+# Get client info
+@app.get("/client")
+def client_info(request: Request):
+    client_host = request.client.host
+    client_port = request.client.port
+    return {"client_host": client_host,
+            "client_port": client_port}
+
+```
+ 
+- Run uvicorn on src/fastapi_hepsiburada_prediction
+```
+uvicorn main:app --host 0.0.0.0 --port 8002 --reload
+```
+
+### 9. Create test_main.py file
+- Test file is related to Jenkins. It check fastapi whether code is true when you send code gitea.
+
+```
+from fastapi.testclient import TestClient
+
+try:
+    from main import app
+except:
+
+    from fastapi_hepsiburada_prediction.main import app
+
+client = TestClient(app)
+
+
+def test_predict_hepsiburada():
+    response = client.post("/prediction/hepsiburada", json={
+        "memory": 128.0,
+        "ram": 8.0,
+        "screen_size": 6.40,
+        "power": 4310.0,
+        "front_camera": 32.0,
+        "rc1": 48.0,
+        "rc3": 8.0,
+        "rc5": 2.0,
+        "rc7": 2.0
+    })
+
+    assert response.status_code == 200
+    assert isinstance(response.json()['result'], float), 'Result wrong type!'
+
+```
+
+
+### 10. Create run_train.py file
+
+- Aim to run easy.
+
+```
+import train
+
+if __name__ == '__main__':
+    train.read_and_train()
+    
+```
 
 ### 16. Create Jenkinsfile
+- I want to learn whether Jenkis is runing.
+
 ``` 
 pipeline{
    agent any
@@ -113,9 +274,12 @@ pipeline{
      }
 }
 ``` 
+
 ### 17. Create playbooks folder and move src file to inside it
 
 ### 18. Create install-fast-on-test.yaml file
+
+- Test.yaml file is 
 
 ``` 
 - hosts: test
@@ -133,6 +297,8 @@ pipeline{
 ``` 
 
 ### 19. Change Jenkinsfile
+
+
 ``` 
 pipeline{
    agent any
