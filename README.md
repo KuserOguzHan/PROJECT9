@@ -258,11 +258,22 @@ if __name__ == '__main__':
     
 ```
 
-### 16. Create Jenkinsfile
-- I want to learn whether Jenkis is runing.
-```
-.
+### 11. Create playbooks folder and move src file to inside it
 
+``` 
+└── playbooks
+    ├── prod
+    ├── src/fastapi_hepsiburada_prediction
+    ├── test
+
+``` 
+
+
+### 12. Create Jenkinsfile
+
+- I want to learn whether Jenkis is runing.
+
+```
 ├── playbooks
 ├── Jenkinsfile
 ├── README.md
@@ -283,23 +294,15 @@ pipeline{
 }
 ``` 
 
-### 17. Create playbooks folder and move src file to inside it
 
-
-
-
-
-### 18. Create install-fast-on-test.yaml file
+### 13. Create install-fast-on-test.yaml file
 
 ``` 
-.
 └── playbooks
     ├── prod
     ├── src/fastapi_hepsiburada_prediction
     ├── test
-    ├── install-fast-on-prod.yaml
     ├── install-fast-on-test.yaml
-    ├── testing-fastapi.yaml
 
 ``` 
 - install-fast-on-test.yaml file is to create a test server.
@@ -319,7 +322,7 @@ pipeline{
         dest: /opt/fastapi
 ``` 
 
-### 19. Change Jenkinsfile
+### 14. Change Jenkinsfile
 
 ```
 ├── playbooks
@@ -343,8 +346,10 @@ pipeline{
 } 
 ``` 
 
-### 20. Create hosts file
+### 15. Create hosts file
+
 - test ve prod serverlerın ip adresleri ve connection türü, user türü gibi bilgiler
+
 ```
 ├── playbooks
 ├── Jenkinsfile
@@ -365,7 +370,8 @@ test ansible_host=test ansible_user=test_user
 prod ansible_host=prod ansible_user=prod_user
 ```
 
-### 21. Check if the files copied to the test_server
+### 16. Check if the files copied to the test_server
+
 - Oluşturduğumuz Jenkinsfile dosyasının içeriğinde olan bilgilerin kopyalanıp kopyalanmadığını kontrol ediyoruz.
 ``` 
 (fastapi) [train@localhost fastapi_hepsiburada_prediction]$ docker exec -it test_server bash
@@ -375,7 +381,7 @@ prod ansible_host=prod ansible_user=prod_user
 [root@test_server /]# ls -l /opt/fastapi/src/fastapi_advertising_prediction/
 ```
 
-### 22. Update install-fast-on-test.yaml file
+### 17. Update install-fast-on-test.yaml file
 - Servicefileın kopyalanması,pip kurulumu, requirements indirilmesi eklendi
 
 ``` 
@@ -408,7 +414,7 @@ prod ansible_host=prod ansible_user=prod_user
         requirements: /opt/fastapi/src/fastapi_hepsiburada_prediction/requirements.txt
 ``` 
 
-### 23. Update install-fast-on-test.yaml file with the last changes
+### 18. Update install-fast-on-test.yaml file with the last changes
 
 ``` 
 - hosts: test
@@ -469,7 +475,7 @@ prod ansible_host=prod ansible_user=prod_user
 ```
 localhost:8001/docs
 ```
-### 24. Update Jenkinsfile
+### 19. Update Jenkinsfile
 ``` 
 pipeline{
    agent any
@@ -492,15 +498,141 @@ pipeline{
 
 } 
 ``` 
-### 25. Create testing-fastapi.yaml file
+### 20. Create testing-fastapi.yaml file
 
-### 26. Update Jenkinsfile with the last changes
+``` 
+└── playbooks
+    ├── src/fastapi_hepsiburada_prediction
+    ├── testing-fastapi.yaml
 
-### 27. Create install-fast-on.yaml file
+``` 
 
-### 28. Create prod folder
+``` 
+- hosts: test
+  become: yes
+  tasks:
+    - name: Install rsync
+      yum:
+        name: rsync
+        state: latest
 
-### 29. Create fastapi.service file under the prod directory
+    - name: Copy files to remote server
+      synchronize:
+        src: src
+        dest: /opt/fastapi
+
+    - name: Upgrade pip
+      pip:
+        name: pip
+        state: latest
+        executable: pip3
+
+    - name: Install pip requirements
+      pip:
+        requirements: /opt/fastapi/src/fastapi_hepsiburada_prediction/requirements.txt
+
+    - name: Env variables for fastapi
+      shell: |
+        export LC_ALL=en_US.utf-8
+        export LANG=en_US.utf-8
+    - name: Run Test script
+      command: bash -c 'cd /opt/fastapi/src/fastapi_hepsiburada_prediction/ && /usr/local/bin/pytest'
+
+``` 
+
+### 21. Update Jenkinsfile with the last changes
+
+### 22. Create install-fast-on-prod.yaml file
+
+``` 
+└── playbooks
+    ├── src/fastapi_hepsiburada_prediction
+    ├── testing-fastapi.yaml
+    ├── install-fast-on-prod.yaml
+
+``` 
+
+```
+- hosts: prod
+  become: yes
+  tasks:
+    - name: Install rsync
+      yum:
+        name: rsync
+        state: latest
+
+    - name: Copy files to remote server
+      synchronize:
+        src: src
+        dest: /opt/fastapi
+
+    - name: Copy service file
+      synchronize:
+        src: prod/fastapi.service
+        dest: /etc/systemd/system/fastapi.service
+
+    - name: Upgrade pip
+      pip:
+        name: pip
+        state: latest
+        executable: pip3
+
+    - name: Install pip requirements
+      pip:
+        requirements: /opt/fastapi/src/fastapi_hepsiburada_prediction/requirements.txt
+
+    - name: Env variables for fastapi
+      shell: |
+        export LC_ALL=en_US.utf-8
+        export LANG=en_US.utf-8
+    - name: Check if Service Exists
+      stat: path=/etc/systemd/system/fastapi.service
+      register: service_status
+
+    - name: Stop Service
+      service: name=fastapi state=stopped
+      when: service_status.stat.exists
+      register: service_stopped
+
+    - name: Start fastapi
+      systemd:
+        name: fastapi
+        daemon_reload: yes
+        state: started
+        enabled: yes
+```
+
+
+
+### 23.1. Create prod folder
+
+``` 
+└── playbooks
+    ├── prod
+        └── fastapi.service
+    ├    
+    ├── src/fastapi_hepsiburada_prediction
+    ├── test
+    ├── install-fast-on-test.yaml
+    
+```
+### 23.2. Create fastapi.service file under the prod directory
+
+```
+[Unit]
+Description=Gunicorn
+Documentation=https://docs.gunicorn.org/en/stable/deploy.html
+
+[Service]
+Type=simple
+ExecStart=/bin/bash -c 'cd /opt/fastapi/src/fastapi_hepsiburada_prediction/ && /usr/local/bin/gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000'
+ExecStop=pkill -f python3
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### 24.Chechc
 
 - check test: localhost:8001/docs
 - check prod: localhost:8000/docs
